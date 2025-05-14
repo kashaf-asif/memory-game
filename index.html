@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>14 Days Left - Memory Game</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      text-align: center;
+      background: linear-gradient(to right, #ffd1dc, #ffeedd);
+      padding: 20px;
+    }
+
+    h1 {
+      color: #b30059;
+      margin-bottom: 20px;
+    }
+
+    .board {
+      display: grid;
+      grid-template-columns: repeat(4, 100px);
+      gap: 15px;
+      justify-content: center;
+    }
+
+    .card {
+      width: 100px;
+      height: 100px;
+      perspective: 600px;
+      cursor: pointer;
+    }
+
+    .inner-card {
+      position: relative;
+      width: 100%;
+      height: 100%;
+      transition: transform 0.6s;
+      transform-style: preserve-3d;
+    }
+
+    .card.flipped .inner-card {
+      transform: rotateY(180deg);
+    }
+
+    .front, .back {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      backface-visibility: hidden;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 30px;
+      background: white;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+    }
+
+    .front {
+      background: #ff99cc;
+      color: white;
+    }
+
+    .back {
+      transform: rotateY(180deg);
+      background: #fff0f5;
+    }
+
+    #win-message {
+      margin-top: 30px;
+      background: #fff0f5;
+      border: 3px solid #ff4da6;
+      padding: 25px;
+      display: inline-block;
+      border-radius: 15px;
+      animation: pop 1s ease;
+      box-shadow: 0 0 15px #ffb3d9;
+      font-family: 'Segoe UI', sans-serif;
+    }
+
+    #win-message h2 {
+      font-size: 28px;
+      color: #cc0066;
+      margin-bottom: 10px;
+    }
+
+    #win-message p {
+      font-size: 18px;
+      color: #444;
+    }
+
+    .hidden {
+      display: none;
+    }
+
+    @keyframes pop {
+      0% { transform: scale(0.5); opacity: 0; }
+      100% { transform: scale(1); opacity: 1; }
+    }
+
+    @keyframes fall {
+      to {
+        transform: translateY(100vh);
+        opacity: 0;
+      }
+    }
+  </style>
+</head>
+<body>
+  <h1>🎊 Match the Cards 🎊</h1>
+  <div id="game-board" class="board"></div>
+
+  <div id="win-message" class="hidden">
+    <!-- Dynamic content will be inserted here -->
+  </div>
+
+  <script>
+    const board = document.getElementById("game-board");
+    const winMessage = document.getElementById("win-message");
+
+    const emojis = ["💍", "👰", "🤵", "💒", "🎂", "🌹", "💌", "🎊"];
+    let cards = [...emojis, ...emojis];
+    let flippedCards = [];
+    let matchedPairs = 0;
+
+    shuffle(cards);
+    createBoard();
+
+    function shuffle(array) {
+      array.sort(() => 0.5 - Math.random());
+    }
+
+    function createBoard() {
+      cards.forEach(emoji => {
+        const card = document.createElement("div");
+        card.classList.add("card");
+
+        const inner = document.createElement("div");
+        inner.classList.add("inner-card");
+
+        const front = document.createElement("div");
+        front.classList.add("front");
+        front.textContent = "❓";
+
+        const back = document.createElement("div");
+        back.classList.add("back");
+        back.textContent = emoji;
+
+        inner.appendChild(front);
+        inner.appendChild(back);
+        card.appendChild(inner);
+
+        card.addEventListener("click", () => flipCard(card, emoji));
+        board.appendChild(card);
+      });
+    }
+
+    function flipCard(card, emoji) {
+      if (card.classList.contains("flipped") || flippedCards.length === 2) return;
+
+      card.classList.add("flipped");
+      flippedCards.push({ card, emoji });
+
+      if (flippedCards.length === 2) {
+        const [first, second] = flippedCards;
+
+        if (first.emoji === second.emoji) {
+          matchedPairs++;
+          flippedCards = [];
+
+          if (matchedPairs === emojis.length) {
+            setTimeout(() => {
+              winMessage.classList.remove("hidden");
+              winMessage.innerHTML = `
+                <h2>💖 14 Days Left for the Wedding! 💖</h2>
+                <p>Wishing your new journey together is filled with endless love, joy, and beautiful memories. Congratulations to the lovely couple! 💖💍</p>
+              `;
+              confetti();
+            }, 500);
+          }
+        } else {
+          setTimeout(() => {
+            first.card.classList.remove("flipped");
+            second.card.classList.remove("flipped");
+            flippedCards = [];
+          }, 800);
+        }
+      }
+    }
+
+    function confetti() {
+      for (let i = 0; i < 100; i++) {
+        const confetti = document.createElement("div");
+        confetti.textContent = "🎉";
+        confetti.style.position = "fixed";
+        confetti.style.left = Math.random() * 100 + "vw";
+        confetti.style.top = Math.random() * 100 + "vh";
+        confetti.style.fontSize = "24px";
+        confetti.style.animation = `fall ${Math.random() * 3 + 2}s linear forwards`;
+        document.body.appendChild(confetti);
+
+        setTimeout(() => confetti.remove(), 5000);
+      }
+    }
+  </script>
+</body>
+</html>
